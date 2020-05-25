@@ -1,0 +1,45 @@
+{
+  "name": "echo-at-time",
+  "version": "1.0.0",
+  "description": " simple application server that prints a message at a given time in the future",
+  "main": "src/app.js",
+  "scripts": {
+    "api": "nodemon bin/api.js",
+    "worker": "node bin/worker.js",
+    "text": "exit 0",
+    "eslint-check": "./node_modules/eslint/bin/eslint.js .",
+    "eslint-fix": "./node_modules/eslint/bin/eslint.js . --fix"
+  },
+  "author": "Farid Jafarlee",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "husky": "^4.2.5",
+    "eslint": "^7.0.0",
+    "eslint-config-import": "^0.13.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1"
+  },
+  "dependencies": {
+    "@hapi/boom": "^9.1.0",
+    "@hapi/joi": "^17.1.1",
+    "body-parser": "^1.19.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "moment": "^2.26.0",
+    "redis": "^3.0.2",
+    "uuid": "^8.1.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run eslint-check && npm test",
+      "pre-push": "npm run eslint-check && npm test"
+    }
+  },
+  "bin": {
+    "echo-at-time": "api.js"
+  }
+}
