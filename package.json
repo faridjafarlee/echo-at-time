@@ -6,7 +6,7 @@
   "scripts": {
     "api": "nodemon bin/api.js",
     "worker": "node bin/worker.js",
-    "text": "exit 0",
+    "test": "exit 0",
     "eslint-check": "./node_modules/eslint/bin/eslint.js .",
     "eslint-fix": "./node_modules/eslint/bin/eslint.js . --fix"
   },
