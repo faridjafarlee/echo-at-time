@@ -44,6 +44,17 @@ class Worker {
       });
   }
 
+  async canProcessMessages(stamp, scheduledMessages) {
+    return Array.isArray(scheduledMessages)
+      && scheduledMessages.length
+      && await ScheduledMessagesRepository.lockMessagesByStamp(stamp) === 1;
+  }
+
+  async messagesProcessed(stamp) {
+    await ScheduledMessagesRepository.deleteScheduleStamp(stamp);
+    await ScheduledMessagesRepository.releaseLockMessagesByStamp(stamp);
+  }
+
   async checkScheduledMessages() {
     if (this.#stopSignal) {
       this.#stopped = true;
@@ -55,10 +66,9 @@ class Worker {
 
     try {
       const { stamp, scheduledMessages } = await ScheduledMessagesRepository.pickMessages();
-      if (scheduledMessages.length && await ScheduledMessagesRepository.lockMessagesByStamp(stamp) === 1) {
+      if (await this.canProcessMessages(stamp, scheduledMessages)) {
         scheduledMessages.forEach(scheduledMesssage => this.printMessage(scheduledMesssage));
-        await ScheduledMessagesRepository.deleteScheduleStamp(stamp);
-        await ScheduledMessagesRepository.releaseLockMessagesByStamp(stamp);
+        await this.messagesProcessed(stamp);
       }
     } catch (error) {} finally {
       await wait(100);
