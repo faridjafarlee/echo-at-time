@@ -29,13 +29,22 @@ Idea is to:
  
 1. save ScheduledMessage struct under uuid key.
 
-2. add that uuid to sorted set using `zadd scheduledMessages {numericTimestampHere} {uuid}` command.
+2.1 add that uuid to sorted set using `zadd scheduledMessages:{numericTimestampHere} {uuid}` command.
 
-3. using `zpopmin` to get oldest record and check if time is passed or not.
+2.2 putting `numericTimestampHere` to `scheduledMessageStamps` sorted set: `zadd scheduledMessageStamps {numericTimestampHere} {numericTimestampHere}`
 
-3.1. if passed to output it
+3. using `zrange` to get oldest record and check if time is passed or not.
 
-3.2. if not passed to put it back to sorted set
+3.1. if passed then 
+
+3.1.1 creating lock: `setnx scheduledMessages:{numericTimestampHere}:lock timestamp + 3`
+3.1.2 getting message ids from sorted set: `zrange scheduledMessages:{numericTimestampHere} 0 -1`
+3.1.3 printing messages
+3.1.4 removing sorted set: `del scheduledMessages:{numericTimestampHere}`
+3.1.5 removing stamp: `zremrangebyscore scheduledMessageStamps {numericTimestampHere} {numericTimestampHere}`
+3.1.6 removing lock: `del scheduledMessages:{numericTimestampHere}:lock`
+
+3.2. if not passed waiting for small period and doing step 3 again
 
 * if `now = true` then record will be the first in sorted set since `numericTimestampHere = 0`
 

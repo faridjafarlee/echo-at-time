@@ -13,8 +13,26 @@ class ScheduledMessages {
     return this.#db.callAsync('set', scheduledMessage._id, scheduledMessage.toString());
   }
 
+  /*
+  publishMessage(scheduledMessage) {
+    this.#db.publish('ScheduledMessagesChannel', scheduledMessage.toString());
+  }
+
+  onMessage(handler) {
+    this.#db.subscribe('ScheduledMessagesChannel', (message) => {
+      message = ScheduledMessage.parse(message);
+      handler(message);
+    });
+  }
+
+  unsubscribe() {
+    this.#db.unsubscribe();
+  }
+  */
+
   async addToSchedule(scheduleStamp, _id) {
-    return this.#db.callAsync('zadd', 'scheduledMessages', scheduleStamp, _id);
+    this.#db.callAsync('zadd', 'scheduledMessageStamps', scheduleStamp, scheduleStamp);
+    this.#db.callAsync('zadd', 'scheduledMessages:' + scheduleStamp, 0, _id);
   }
 
   async schedule(scheduledMessage) {
@@ -24,6 +42,7 @@ class ScheduledMessages {
   }
 
   async scheduleNow(scheduledMessage) {
+    // return this.publishMessage(scheduledMessage);
     return this.addToSchedule(0, scheduledMessage._id);
   }
 
@@ -33,19 +52,32 @@ class ScheduledMessages {
     return null;
   }
 
-  async pick() {
-    const result = await this.#db.callAsync('zpopmin', 'scheduledMessages');
+  async pickMessages() {
+    const result = await this.#db.callAsync('zrange', 'scheduledMessageStamps', 0, 0, 'WITHSCORES');
     if (!(result && result.length === 2)) return null;
 
-    const [_id, scheduleStamp] = result;
+    const [stamp, scheduleStamp] = result;
 
     const scheduleTime = new Date(parseInt(scheduleStamp));
-    if (moment(scheduleTime).isAfter()) {
-      await this.addToSchedule(scheduleStamp, _id);
-      return null;
-    }
+    if (moment(scheduleTime).isAfter()) return [];
 
-    return await this.get(_id);
+    const scheduledMessageIds = await this.#db.callAsync('zrange', 'scheduledMessages:' + stamp, 0, -1);
+    const scheduledMessages = await Promise.all(scheduledMessageIds.map(id => this.get(id)));
+
+    return { stamp, scheduledMessages };
+  }
+
+  async deleteScheduleStamp(stamp) {
+    await this.#db.callAsync('zremrangebyscore', 'scheduledMessageStamps', stamp, stamp);
+    await this.#db.callAsync('del', 'scheduledMessages:' + stamp);
+  }
+
+  async lockMessagesByStamp(stamp) {
+    return await this.#db.callAsync('setnx', 'scheduledMessages:' + stamp + ':lock', parseInt(Date.now() / 1000) + 3);
+  }
+
+  async releaseLockMessagesByStamp(stamp) {
+    return await this.#db.callAsync('del', 'scheduledMessages:' + stamp + ':lock');
   }
 }
 
