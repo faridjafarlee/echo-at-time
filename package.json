@@ -1,6 +1,6 @@
 {
   "name": "echo-at-time",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": " simple application server that prints a message at a given time in the future",
   "main": "src/app.js",
   "scripts": {
