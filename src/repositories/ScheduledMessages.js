@@ -53,12 +53,12 @@ class ScheduledMessages {
   }
 
   async pickMessages() {
-    const result = await this.#db.callAsync('zrange', 'scheduledMessageStamps', 0, 0, 'WITHSCORES');
-    if (!(result && result.length === 2)) return {};
+    const result = await this.#db.callAsync('zrange', 'scheduledMessageStamps', 0, 0);
+    if (!(result && result.length === 1)) return {};
 
-    const [stamp, scheduleStamp] = result;
+    const [stamp] = result;
 
-    const scheduleTime = new Date(parseInt(scheduleStamp));
+    const scheduleTime = new Date(parseInt(stamp));
     if (moment(scheduleTime).isAfter()) return {};
 
     const scheduledMessageIds = await this.#db.callAsync('zrange', 'scheduledMessages:' + stamp, 0, -1);

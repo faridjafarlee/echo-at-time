@@ -1,12 +1,12 @@
 {
   "name": "echo-at-time",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": " simple application server that prints a message at a given time in the future",
   "main": "src/app.js",
   "scripts": {
     "api": "node bin/api.js",
     "worker": "node bin/worker.js",
-    "text": "exit 0",
+    "test": "exit 0",
     "eslint-check": "./node_modules/eslint/bin/eslint.js .",
     "eslint-fix": "./node_modules/eslint/bin/eslint.js . --fix"
   },

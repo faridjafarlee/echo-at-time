@@ -45,9 +45,9 @@ class Worker {
   }
 
   async canProcessMessages(stamp, scheduledMessages) {
-    return Array.isArray(scheduledMessages)
-      && scheduledMessages.length
-      && await ScheduledMessagesRepository.lockMessagesByStamp(stamp) === 1;
+    return Array.isArray(scheduledMessages) &&
+      scheduledMessages.length &&
+      await ScheduledMessagesRepository.lockMessagesByStamp(stamp) === 1;
   }
 
   async messagesProcessed(stamp) {

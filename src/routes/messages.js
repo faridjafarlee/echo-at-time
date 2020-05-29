@@ -10,7 +10,7 @@ const wrapHandler = fn => (req, res, next) => {
     .resolve(fn(req, res, next))
     .catch((err) => {
       if (!err.isBoom) {
-        return next(boom.badImplementation(err));
+        return next(boom.badImplementation(err, { stack: err.stack }));
       }
       next(err);
     });
